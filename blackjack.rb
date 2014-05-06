@@ -12,11 +12,11 @@
 require "pry"
   nums = ["Ace","Two", "Three" , "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"]
   suits = ["Spades", "Hearts", "Diamonds", "Clubs"]
-  @decks = suits.product nums
-  @decks.shuffle!
+  deck = suits.product nums
+  deck.shuffle!
 
-def giving_card name
-  card =  @decks.pop
+def giving_card(name, deck)
+  card =  deck.pop
   puts "#{name} are given a #{card[0] + " "+ card[1]}"
   card
 end
@@ -37,8 +37,7 @@ def points_calculate cards
   end
   total_value
 end
-
-
+#Game Start
 puts "I am the dealer. May I know your name?"
 player_name = gets.chomp
 begin
@@ -46,20 +45,27 @@ begin
   puts "\n"
   player_cards_held =[]
   dealer_cards_held =[]
-  player_cards_held << ( giving_card player_name )
-  dealer_cards_held << ( giving_card "dealer" )
-  player_cards_held << ( giving_card player_name )
-  dealer_cards_held << ( giving_card "dealer" )
+  player_cards_held << ( giving_card player_name, deck )
+  dealer_cards_held << ( giving_card "dealer", deck )
+  player_cards_held << ( giving_card player_name, deck )
+  dealer_cards_held << ( giving_card "dealer", deck )
   player_scores = points_calculate player_cards_held
   dealer_scores = points_calculate dealer_cards_held
+
+  # Player turn
+  if player_scores ==21
+    puts "You hit blackjack. You win! "
+    break
+  end
+
   begin
     puts "Hit or Stay?"
     action = gets.chomp
     if action == "Hit"
-      player_cards_held << ( giving_card player_name )
+      player_cards_held << ( giving_card player_name, deck )
       player_scores = points_calculate player_cards_held
       if (player_scores) == 21
-        puts "#{player_name} You win!!!!"
+        puts "#{player_name} got a blackjack. You win! "
         break
       elsif (player_scores) > 21
         puts "You are busted"
@@ -70,38 +76,50 @@ begin
       break
     else
         puts "I dont understand. You can only choose  \"Hit\" or \"Stay\""
+        next
     end
-  end while action != "Stay"
+  end while player_scores < 21
+
+#dealer turn
+  if dealer_scores ==21
+    puts "I hit blackjack. You loss!  "
+    break
+  end
 
 
-  if player_scores <= 21
     puts "\n"
     puts "Now it is my turn"
-    begin
-      if dealer_scores <= 17
-        dealer_cards_held << ( giving_card "dealer" )
-        dealer_scores = points_calculate dealer_cards_held
-        if (dealer_scores) == 21
-          puts "I win!!!!"
-          break
-        elsif (dealer_scores) > 21
-          puts "I am busted. You win. "
-          puts (dealer_scores)
-          break
-        end
-      else
-        if dealer_scores <= player_scores
-          dealer_cards_held << ( giving_card "dealer" )
-          dealer_scores = points_calculate dealer_cards_held
-        else
-          puts" You points is #{player_scores} and my points is #{dealer_scores}"
-          puts "I win!!!!"
-          break
-        end
+    while dealer_scores < 17
+      dealer_cards_held << ( giving_card "dealer", deck )
+      dealer_scores = points_calculate dealer_cards_held
+      if (dealer_scores) == 21
+        break
+      elsif (dealer_scores) > 21
+        puts "I am busted. You win. "
+        puts (dealer_scores)
+        break
       end
-      puts "Dealer's points is #{dealer_scores}"
-    end while dealer_scores <=21
+    end
+
+  #Compare hands
+
+  puts "your hands: "
+  player_cards_held.each do |card|
+    puts "=> #{card}"
   end
+  puts "dealer hands: "
+  dealer_cards_held.each do |card|
+    puts "=> #{card}"
+  end
+  puts" You points is #{player_scores} and my points is #{dealer_scores}"
+  if dealer_scores > player_scores
+    puts "I win!!!!"
+  elsif dealer_scores < player_scores
+    puts "You win!"
+  else
+    puts "Draw!"
+  end
+
   begin
     puts "Do you want to play again? Yes or No"
     response = gets.chomp
