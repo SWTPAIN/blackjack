@@ -13,7 +13,7 @@ class Card
   end
 
   def to_s
-    "#{@suit} #{@value}"
+    pretty_output
   end
 
   def pretty_output
@@ -37,7 +37,7 @@ class Deck
   def initialize
     @cards = []
     ['H', 'D', 'S', 'C'].each do |suit|
-      %w(1 2 3 4 5 6 7 8 9 10).each do |value|
+      %w(2 3 4 5 6 7 8 9 10 J Q K A).each do |value|
         @cards << Card.new(suit, value)
       end
     end
@@ -56,19 +56,20 @@ end
 
 module Hand
   def total
-    @cards.inject(0) do |total, card|
-      if card.value =='A'
-        total += 11
-      else
-        total += ( card.value.to_i == 0 ? 10 : card.value.to_i )
-      end
+
+    total = @cards.inject(0) do |total, card|
+                  if card.value =='A'
+                    total += 11
+                  else
+                    total += ( card.value.to_i == 0 ? 10 : card.value.to_i )
+                  end
+                end
+
 
       @cards.select { |e| e=="A"}.count.times do
         total -= 10 if total >21
       end
     total
-  end
-
   end
 
   def show_hand
@@ -203,13 +204,15 @@ class Blackjack
         dealer.add_one (new_card)
         puts "#{dealer.name}'s total is now :#{dealer.total}"
       else
-        break
+         puts "Dealer choose to stay"
+         break
       end
     end
   end
 
   def who_win?
     if player.total > dealer.total
+      puts "Congrats, #{player.name} wins"
     elsif player.total < dealer.total
       puts "Sorry, #{player.name} loses"
     else
